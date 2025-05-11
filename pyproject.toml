@@ -8,4 +8,5 @@ dependencies = [
     "agentops>=0.4.10",
     "chainlit>=2.5.5",
     "openai-agents>=0.0.14",
+    "rich>=14.0.0",
 ]

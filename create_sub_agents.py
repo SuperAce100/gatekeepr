@@ -1,8 +1,16 @@
 import os
 import random
 from llms import llm_call
-from prompts import file_reader_system_prompt
+from prompts import file_reader_system_prompt, sub_agent_system_prompt
 import fnmatch
+import concurrent.futures
+from agents import Agent
+from rich.progress import track
+from rich.console import Console
+from rich.rule import Rule
+
+console = Console()
+
 
 def list_files(input_dir):
     result = []
@@ -15,7 +23,7 @@ def list_files(input_dir):
             with open(gitignore_path, 'r', encoding='utf-8') as f:
                 gitignore_patterns = [line.strip() for line in f if line.strip() and not line.startswith('#')]
         except Exception as e:
-            print(f"Error reading .gitignore: {str(e)}")
+            console.print(f"Error reading .gitignore: {str(e)}", style="bold red")
     
     for root, dirs, files in os.walk(input_dir):
         # Filter out directories that start with '.'
@@ -56,38 +64,35 @@ def summarize_file(file):
     system_prompt = file_reader_system_prompt
     return llm_call(prompt, system_prompt)
 
+def create_sub_agents(input_dir):
+    files = list_files(input_dir)
+
+    def create_sub_agent(file):
+        summary = summarize_file(file)
+        agent = Agent(name=file[0], handoff_description=summary, instructions=sub_agent_system_prompt, tools=[], model="gpt-4.1-mini")
+        return agent
+
+    
+    sub_agents = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(create_sub_agent, file) for file in files]
+        for future in track(concurrent.futures.as_completed(futures), total=len(futures), description="Creating sub-agents"):
+            file = next(file for file, fut in zip(files, futures) if fut == future)
+            try:
+                sub_agent = future.result()
+                sub_agents.append(sub_agent)
+            except Exception as e:
+                console.print(f"Error creating agent for {file[0]}: {str(e)}", style="bold red")
+    return sub_agents
 
 
-# def create_sub_agents(input_dir):
-#     files = list_files(input_dir)
-
-#     for file in files:
-#         print(file)
-
-# create_sub_agents("data")
 
 if __name__ == "__main__":
     input_dir = ".data/autolibra"
-    files = list_files(input_dir)
-    for file in files:
-        print(file[1][:100])
-    print(len(files))
 
-    random_files = random.sample(files, 10)
-    import concurrent.futures
-    
-    summaries = {}
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_to_file = {executor.submit(summarize_file, file): file for file in random_files}
-        for future in concurrent.futures.as_completed(future_to_file):
-            file = future_to_file[future]
-            summaries[file[0]] = future.result()
-    
-    # Print results sequentially
-    for file in random_files:
-        print("="*100)
-        print(file[0])
-        print(file[1][:100])
-        print("-"*100)
-        print(summaries[file[0]])
-    
+    sub_agents = create_sub_agents(input_dir)
+    console.print(f"Created {len(sub_agents)} sub-agents:", style="bold green")
+    for sub_agent in sub_agents:
+        console.print(Rule(style="bold green", title=sub_agent.name, align="left"))
+        console.print(sub_agent.handoff_description, style="dim")
+

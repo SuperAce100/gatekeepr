@@ -1,10 +1,11 @@
+from email import utils
 import os
 import random
 from llms import llm_call
 from prompts import file_reader_system_prompt, sub_agent_system_prompt
 import fnmatch
 import concurrent.futures
-from agents import Agent
+from agents import Agent, function_tool
 from rich.progress import track
 from rich.console import Console
 from rich.rule import Rule
@@ -64,12 +65,31 @@ def summarize_file(file):
     system_prompt = file_reader_system_prompt
     return llm_call(prompt, system_prompt)
 
+INPUT_DIR = ""
+
+
+@function_tool
+def update_file(file_name: str, old_content: str, new_content: str):
+    global INPUT_DIR
+
+    file_path = os.path.join(INPUT_DIR, file_name)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        old_file_content = f.read()
+        new_file_content = utils.find_and_replace(old_content, new_content, old_file_content)
+        f.write(new_file_content)
+
+    console.print(f"Updating {file_name} with diff: >>>>>>[red]{old_content}[/red]\n=======\nz[green]{new_content}[/green]\n<<<<<<", style="dim")
+    return f"Update successful!"
+
 def create_sub_agents(input_dir):
+    global INPUT_DIR
+    INPUT_DIR = input_dir
     files = list_files(input_dir)
 
     def create_sub_agent(file):
         summary = summarize_file(file)
-        agent = Agent(name=file[0], handoff_description=summary, instructions=sub_agent_system_prompt, tools=[], model="gpt-4.1-mini")
+        agent = Agent(
+            name=file[0], handoff_description=summary, instructions=sub_agent_system_prompt.format(file_name=file[0], file_content=file[1]), tools=[update_file], model="gpt-4.1-mini")
         return agent
 
     

@@ -1,0 +1,14 @@
+.logo.w-\[200px\].mb-2{
+    width: 500px;
+    margin-bottom: 20px;
+}
+
+.relative.flex.shrink-0.overflow-hidden.rounded-full.h-5.w-5.mt-\[3px\]{
+    width: 30px;
+    height: 30px;
+    margin-top: 3px;
+}
+
+#side-view-title {
+    display: none;
+}

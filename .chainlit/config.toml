@@ -1,4 +1,5 @@
 [project]
+
 # Whether to enable telemetry (default: true). No personal data is collected.
 enable_telemetry = true
 
@@ -82,7 +83,7 @@ cot = "full"
 
 # Specify a CSS file that can be used to customize the user interface.
 # The CSS file can be served from the public directory or via an external link.
-# custom_css = "/public/test.css"
+custom_css = "/public/styles.css"
 
 # Specify additional attributes for a custom CSS file
 # custom_css_attributes = "media=\"print\""

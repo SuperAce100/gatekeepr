@@ -18,7 +18,7 @@ agentops.init(api_key=os.getenv("AGENTOPS_API_KEY"))
 
 async def main():
 
-    input_dir = ".data/svgrl"
+    input_dir = ".data/portfolio/asanshay-portfolio"
     sub_agents: List[Agent] = create_sub_agents(input_dir)
 
     console.print(f"Created {len(sub_agents)} sub-agents:", style="bold green")
@@ -32,14 +32,10 @@ async def main():
         instructions=orchestrator_system_prompt,
         handoff_description="The orchestrator, who should be updated after all changes have been made.",
         tools=[sub_agent.as_tool(sub_agent.name.replace(' ', '_').replace('.', '_').replace('/', '_')[:50], sub_agent.handoff_description) for sub_agent in sub_agents],
-        model="gpt-4.1-mini"
+        model="gpt-4.1"
     )
 
-    
-
-    # print(orchestrator.handoffs)
-
-    result = await Runner.run(orchestrator, "Add dark mode to the viewers")
+    result = await Runner.run(orchestrator, "Update the hero section to be more visually appealing and engaging while maintaining the style")
 
     console.print(result.final_output, style="bold")
 if __name__ == "__main__":

@@ -69,17 +69,23 @@ INPUT_DIR = ""
 
 
 @function_tool
-def update_file(file_name: str, old_content: str, new_content: str):
+def update_file(file_name: str, new_content: str):
     global INPUT_DIR
 
-    file_path = os.path.join(INPUT_DIR, file_name)
-    with open(file_path, 'w', encoding='utf-8') as f:
-        old_file_content = f.read()
-        new_file_content = utils.find_and_replace(old_content, new_content, old_file_content)
-        f.write(new_file_content)
+    console.print(f"Updating {file_name} with diff: >>>>>>\n[green]{new_content}[/green]\n<<<<<<", style="dim")
 
-    console.print(f"Updating {file_name} with diff: >>>>>>[red]{old_content}[/red]\n=======\nz[green]{new_content}[/green]\n<<<<<<", style="dim")
-    return f"Update successful!"
+    file_path = os.path.join(INPUT_DIR, file_name)
+    # with open(file_path, 'r', encoding='utf-8') as f:
+    #     old_file_content = f.read()
+    # console.print(f"READING FILE {old_file_content}", style="bold red")
+
+    # console.print(f"New file content: {new_file_content}", style="bold blue")
+    # console.print(f"WRITING FILE", style="bold red")
+    
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(new_content)
+            
+    return "Update successful!"
 
 def create_sub_agents(input_dir):
     global INPUT_DIR
@@ -89,7 +95,7 @@ def create_sub_agents(input_dir):
     def create_sub_agent(file):
         summary = summarize_file(file)
         agent = Agent(
-            name=file[0], handoff_description=summary, instructions=sub_agent_system_prompt.format(file_name=file[0], file_content=file[1]), tools=[update_file], model="gpt-4.1-mini")
+            name=file[0], handoff_description=summary, instructions=sub_agent_system_prompt.format(file_name=file[0], file_content=file[1]), tools=[update_file], model="gpt-4.1")
         return agent
 
     

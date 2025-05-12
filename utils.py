@@ -43,3 +43,19 @@ def find_and_replace(find: str, replace: str, corpus: str) -> str:
     """
     best_match = find_best_match(find, corpus)
     return corpus.replace(best_match, replace)
+
+if __name__ == "__main__":
+    old_code = "This is some really old code to be replaced at some point. The technique of concealing information within ordinary-looking text is often used for various purposes including steganography and other forms of information hiding."
+    new_code = "This is the new code that will replace the old code and there are a lot of words in this sentence, maybe even too many words. This could be a problem but it could also be a good thing."
+
+    corpus = """
+    This is some text that contains hidden content within a larger body of text. The text continues with more content to effectively obscure what might be hidden inside this paragraph. By embedding it within a substantial amount of surrounding text, the hidden elements become less noticeable to casual observation. This is some really poopy code to be replaced at some point. The technique of concealing information within ordinary-looking text is often used for various purposes including steganography and other forms of information hiding. The technique of concealing information within ordinary-looking text is often used for various purposes including steganography and other forms of information hiding.
+    """
+
+    best_match = find_best_match(old_code, corpus)
+    print("Best match:")
+    print(best_match)
+
+    replaced_corpus = find_and_replace(old_code, new_code, corpus)
+    print("Replaced corpus:")
+    print(replaced_corpus)

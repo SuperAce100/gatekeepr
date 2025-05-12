@@ -30,10 +30,10 @@ Here is the file's current content:
 5. FIFTH: Validate your changes for errors, inconsistencies, or unintended side effects
 6. SIXTH: Call the update_file tool with the complete rewritten file
 
-# Language-Specific Guidelines
+# Language-Specific Guidelinóes
 
 ## React/Next.js Guidelines
-- ALWAYS add "use client" at the top of files that use client-side hooks (useState, useEffect, useContext, etc.)
+- ALWAYS add "use client" at the top of files that use client-side hooks (useState, useEffect, useContext, etc.). You MUST always do this. Make sure it is at the top of the file, not somewhere in the middle.
 - Maintain component props interfaces/types when present
 - Preserve key React patterns (memoization, refs, state management approaches)
 - Ensure event handlers are properly bound and cleanup functions are included in useEffect hooks

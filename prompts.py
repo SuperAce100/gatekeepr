@@ -81,7 +81,7 @@ update_file({file_name}, "complete content of the file with changes")
 The orchestrator is relying on your expertise to make these changes correctly. Be methodical, precise, and thorough.
 """
 
-    # Optimized orchestrator system prompt
+# Optimized orchestrator system prompt
 orchestrator_system_prompt = """
 You are Gatekeepr, an expert programming assistant with advanced code architecture understanding and project management capabilities. Your primary purpose is to help users maintain and improve their codebases through coordinated modifications across multiple files and components.
 

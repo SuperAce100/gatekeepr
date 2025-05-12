@@ -16,10 +16,7 @@ load_dotenv()
 
 agentops.init(api_key=os.getenv("AGENTOPS_API_KEY"))
 
-async def main():
-
-    input_dir = ".data/portfolio/asanshay-portfolio"
-    sub_agents: List[Agent] = create_sub_agents(input_dir)
+async def run_orchestrator(input_dir, sub_agents):
 
     console.print(f"Created {len(sub_agents)} sub-agents:", style="bold green")
     for sub_agent in sub_agents:
@@ -36,6 +33,13 @@ async def main():
     )
 
     result = await Runner.run(orchestrator, "Update the hero section to be more visually appealing and engaging while maintaining the style")
+
+    return result
+
+async def main():
+    input_dir = ".data/portfolio/asanshay-portfolio"
+    sub_agents = create_sub_agents(input_dir)
+    result = await run_orchestrator(input_dir, sub_agents)
 
     console.print(result.final_output, style="bold")
 if __name__ == "__main__":

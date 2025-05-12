@@ -12,7 +12,7 @@ export default function SubAgent() {
         <AccordionItem key={index} value={`item-${index}`}>
           <AccordionTrigger className="font-medium">{agent.name}</AccordionTrigger>
           <AccordionContent>
-            <div className="text-sm text-muted-foreground">{agent.handoff_description}</div>
+            <div className="text-sm text-muted-foreground">{agent.description}</div>
           </AccordionContent>
         </AccordionItem>
       ))}

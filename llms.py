@@ -1,14 +1,14 @@
 import os
-from openai import OpenAI
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def llm_call(prompt, system_prompt, model="gpt-4.1-mini"):
+async def llm_call(prompt, system_prompt, model="gpt-4.1-mini"):
 
-    response = client.chat.completions.create(
+    response = await client.chat.completions.create(
         model=model,
         messages=[
             {"role": "system", "content": system_prompt},

@@ -9,6 +9,7 @@ from agents import Agent, function_tool
 from rich.progress import track
 from rich.console import Console
 from rich.rule import Rule
+import chainlit as cl
 
 console = Console()
 
@@ -49,7 +50,7 @@ def list_files(input_dir):
             rel_path = os.path.relpath(file_path, input_dir)
             
             # Skip files that match gitignore patterns
-            if gitignore_patterns and any(fnmatch.fnmatch(rel_path, pattern) for pattern in gitignore_patterns):
+            if gitignore_patterns and any(fnmatch.fnmatch(rel_path, pattern) for pattern in gitignore_patterns + ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.svg", "*.webp"]):
                 continue
                 
             try:
@@ -69,7 +70,7 @@ INPUT_DIR = ""
 
 
 @function_tool
-def update_file(file_name: str, new_content: str):
+async def update_file(file_name: str, new_content: str):
     global INPUT_DIR
 
     console.print(f"Updating {file_name} with diff: >>>>>>\n[green]{new_content}[/green]\n<<<<<<", style="dim")
@@ -81,19 +82,28 @@ def update_file(file_name: str, new_content: str):
 
     # console.print(f"New file content: {new_file_content}", style="bold blue")
     # console.print(f"WRITING FILE", style="bold red")
-    
+
+    with open(file_path, 'r', encoding='utf-8') as f1:
+        old_file_content = f1.read()
+
+    elements = [cl.CustomElement(name="CodeDiffViewer", props={"filename": file_name, "old_text": old_file_content, "new_text": new_content})]
+
+    msg = cl.Message(content=f"### Updating {file_name}", elements=elements)
+
+    await msg.send()
+
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
             
     return "Update successful!"
 
-def create_sub_agents(input_dir):
+async def create_sub_agents(input_dir):
     global INPUT_DIR
     INPUT_DIR = input_dir
     files = list_files(input_dir)
 
-    def create_sub_agent(file):
-        summary = summarize_file(file)
+    async def create_sub_agent(file):
+        summary = await summarize_file(file)
         agent = Agent(
             name=file[0], handoff_description=summary, instructions=sub_agent_system_prompt.format(file_name=file[0], file_content=file[1]), tools=[update_file], model="gpt-4.1")
         return agent
@@ -105,7 +115,7 @@ def create_sub_agents(input_dir):
         for future in track(concurrent.futures.as_completed(futures), total=len(futures), description="Creating sub-agents"):
             file = next(file for file, fut in zip(files, futures) if fut == future)
             try:
-                sub_agent = future.result()
+                sub_agent = await future.result()
                 sub_agents.append(sub_agent)
             except Exception as e:
                 console.print(f"Error creating agent for {file[0]}: {str(e)}", style="bold red")
@@ -117,6 +127,7 @@ if __name__ == "__main__":
     input_dir = ".data/autolibra"
 
     sub_agents = create_sub_agents(input_dir)
+
     console.print(f"Created {len(sub_agents)} sub-agents:", style="bold green")
     for sub_agent in sub_agents:
         console.print(Rule(style="bold green", title=sub_agent.name, align="left"))
